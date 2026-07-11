@@ -40,6 +40,16 @@ def test_find_notes_builds_in_filter_over_selection():
     assert "attachments" in fields
 
 
+def test_find_notes_for_task_uses_tasks_field():
+    # Notes link to Tasks via the dedicated `tasks` field, not note_links
+    # (matches the ShotGrid panel's filter hook).
+    sg = FakeSg(find_result=[{"id": 9}])
+    notes = shotgrid.find_notes_for_entities(sg, "Task", [33102])
+    assert notes == [{"id": 9}]
+    _, filters, _ = sg.find_calls[0]
+    assert filters == [["tasks", "in", [{"type": "Task", "id": 33102}]]]
+
+
 def test_attachments_from_notes_flattens():
     a0 = {"type": "Attachment", "id": 100, "name": "a.jpg"}
     a1 = {"type": "Attachment", "id": 101, "name": "b.jpg"}

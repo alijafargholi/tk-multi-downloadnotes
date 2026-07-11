@@ -18,12 +18,17 @@ _NOTE_FIELDS = ["id", "subject", "attachments"]
 
 
 def find_notes_for_entities(sg, entity_type, entity_ids):
-    """Return Notes linked directly (via ``note_links``) to any selected
-    entity."""
+    """Return Notes linked directly to any of the selected entities.
+
+    Notes link to Tasks through the dedicated ``tasks`` field and to every
+    other entity type (Shot, Asset, Version, ...) through ``note_links`` --
+    matching how the ShotGrid panel resolves an entity's notes.
+    """
     entities = [{"type": entity_type, "id": i} for i in entity_ids]
+    link_field = "tasks" if entity_type == "Task" else "note_links"
     return sg.find(
         "Note",
-        [["note_links", "in", entities]],
+        [[link_field, "in", entities]],
         _NOTE_FIELDS,
     )
 
