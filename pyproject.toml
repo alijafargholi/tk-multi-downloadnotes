@@ -1,0 +1,30 @@
+[project]
+name = "tk-multi-downloadnotes"
+version = "0.1.0"
+description = "Download attachments from Notes linked to selected entities"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.3",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.7.4",
+    "pre-commit>=4.0.1",
+    "ty>=0.0.58",
+]
+
+[tool.ruff]
+lint.extend-select = ["C4", "SIM", "TCH", "F401", "E5", "UP032", "I0", "N8"]
+lint.extend-ignore = ["SIM115"]
+line-length = 79
+indent-width = 4
+target-version = "py311"
+
+[tool.ty.environment]
+python-version = "3.11"
+root = [".", "python"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
