@@ -39,7 +39,7 @@ multi-entity selection. Works on macOS and Windows.
 |----------|----------|
 | Which notes? | Direct `note_links` only. |
 | Which attachments? | Note `attachments` field only (not Replies). |
-| Folder layout | Flat inside `Annotations_yyyymmdd/`, with note-id prefix only on filename collisions. |
+| Folder layout | Flat inside `Annotations_yyyymmdd/`; every file named `{note_id}_{attachment_id}_{filename}`. |
 | While/after download | Silent + open the folder when done. |
 | Command title | "Download Note Attachments". |
 | Type checking | Add `ty` (dev dep + pre-commit hook). |
@@ -97,28 +97,25 @@ run(entity_type, entity_ids, sg, logger,
 side effect are deterministic and mockable in tests. `today` defaults to
 `datetime.date.today()`, `reveal_fn` to `reveal.reveal`.
 
-## Naming / collision + idempotency rule
+## Naming + idempotency rule
 
-Computed over **all** attachments gathered in one run (so it is deterministic
-and re-runnable, not order-dependent against the live filesystem):
+Every downloaded file uses one unconditional convention:
 
-- If a `filename` is **unique** in the run → target = `filename`.
-- If a `filename` is **shared** by attachments from different notes → each
-  target = `{note_id}_{filename}`.
-- Guard: if a single note has two attachments with the same `filename`,
-  disambiguate further → `{note_id}_{attachment_id}_{filename}`.
-- **Skip = already downloaded**: before downloading, if the chosen target name
-  already exists in the folder, skip it (never overwrite).
+```
+{note_id}_{attachment_id}_{filename}
+```
 
-Rationale: deciding plain-vs-tagged needs *provenance* (the note id), because
-"a file with this name exists" is otherwise ambiguous between "already
-downloaded" and "a different note's collision." Detecting collisions over the
-run-set — rather than one attachment at a time against the disk — is what
-makes the result deterministic and idempotent across re-runs.
+- No conditional/collision logic. Because ShotGrid attachment ids are globally
+  unique, this name is unique by construction — two attachments can never
+  collide, and the same attachment always maps to the same name.
+- **Skip = already downloaded**: before downloading, if the target name
+  already exists in the folder, skip it (never overwrite). Since the name is a
+  stable function of the attachment, re-running the action never re-downloads a
+  file that is already present.
 
-Edge case (accepted): if the *selection* changes between runs so that a
-formerly-unique filename becomes a collision, a run may produce both `F` and
-`{note_id}_F`. This is rare and the worst outcome is one duplicate copy.
+`naming.target_filename(note_id, attachment_id, filename)` is a small pure
+function; `naming.plan_downloads(attachments)` maps the gathered attachments to
+`[(attachment, target_filename), ...]`.
 
 ## Error handling & scope
 
@@ -174,8 +171,9 @@ One test module per source module, using fakes + `tmp_path` + injected
   `tmp_path` as `desktop_dir`, fixed `today`.
 - `tests/test_shotgrid.py` — note/attachment queries and download, with a fake
   duck-typed `sg`.
-- `tests/test_naming.py` — collision matrix: unique names, cross-note
-  collisions, same-note duplicate names, skip-when-exists.
+- `tests/test_naming.py` — `target_filename` produces
+  `{note_id}_{attachment_id}_{filename}`; `plan_downloads` maps a list of
+  attachments; stability (same attachment → same name).
 - `tests/test_paths.py` — `annotations_dirname` formatting; `desktop_dir`
   per-platform branch (as in the reference).
 - `tests/test_reveal.py` — correct command per platform via an injected runner
