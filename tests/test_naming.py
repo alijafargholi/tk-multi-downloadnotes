@@ -27,8 +27,19 @@ def test_plan_downloads_maps_each_attachment():
     ]
 
 
-def test_same_attachment_maps_to_same_name():
+def test_different_attachments_never_collide():
+    # Same filename, different note/attachment ids -> distinct target names.
+    a = naming.target_filename(1, 2, "annot.jpg")
+    b = naming.target_filename(1, 3, "annot.jpg")
+    c = naming.target_filename(4, 2, "annot.jpg")
+    assert a != b
+    assert a != c
+    assert len({a, b, c}) == 3
+
+
+def test_note_and_attachment_ids_are_positional():
+    # Swapping the two ids must change the result (order is significant).
     assert (
         naming.target_filename(7, 8, "x.png")
-        == naming.target_filename(7, 8, "x.png")
+        != naming.target_filename(8, 7, "x.png")
     )
