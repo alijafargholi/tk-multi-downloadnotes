@@ -49,10 +49,18 @@ def test_attachments_from_notes_flattens():
         {"id": 12},  # no attachments key at all
     ]
     assert shotgrid.attachments_from_notes(notes) == [
-        {"note_id": 10, "attachment_id": 100, "filename": "a.jpg",
-         "entity": a0},
-        {"note_id": 10, "attachment_id": 101, "filename": "b.jpg",
-         "entity": a1},
+        {
+            "note_id": 10,
+            "attachment_id": 100,
+            "filename": "a.jpg",
+            "entity": a0,
+        },
+        {
+            "note_id": 10,
+            "attachment_id": 101,
+            "filename": "b.jpg",
+            "entity": a1,
+        },
     ]
 
 

@@ -29,9 +29,7 @@ def plan_downloads(attachments):
     return [
         (
             a,
-            target_filename(
-                a["note_id"], a["attachment_id"], a["filename"]
-            ),
+            target_filename(a["note_id"], a["attachment_id"], a["filename"]),
         )
         for a in attachments
     ]

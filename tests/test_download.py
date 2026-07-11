@@ -58,8 +58,13 @@ def test_no_entities_selected(tmp_path):
     logger = FakeLogger()
     revealed = []
     download.run(
-        "Shot", [], sg, logger, desktop_dir=str(tmp_path),
-        reveal_fn=revealed.append, today=TODAY,
+        "Shot",
+        [],
+        sg,
+        logger,
+        desktop_dir=str(tmp_path),
+        reveal_fn=revealed.append,
+        today=TODAY,
     )
     assert revealed == []
     assert os.listdir(tmp_path) == []
@@ -70,8 +75,13 @@ def test_no_notes_creates_nothing(tmp_path):
     logger = FakeLogger()
     revealed = []
     download.run(
-        "Shot", [1], sg, logger, desktop_dir=str(tmp_path),
-        reveal_fn=revealed.append, today=TODAY,
+        "Shot",
+        [1],
+        sg,
+        logger,
+        desktop_dir=str(tmp_path),
+        reveal_fn=revealed.append,
+        today=TODAY,
     )
     assert revealed == []
     assert os.listdir(tmp_path) == []
@@ -83,8 +93,13 @@ def test_downloads_and_reveals(tmp_path):
     logger = FakeLogger()
     revealed = []
     download.run(
-        "Shot", [1], sg, logger, desktop_dir=str(tmp_path),
-        reveal_fn=revealed.append, today=TODAY,
+        "Shot",
+        [1],
+        sg,
+        logger,
+        desktop_dir=str(tmp_path),
+        reveal_fn=revealed.append,
+        today=TODAY,
     )
     folder = tmp_path / FOLDER
     assert (folder / "50_500_a.jpg").exists()
@@ -100,8 +115,13 @@ def test_skips_existing_file(tmp_path):
     folder.mkdir()
     (folder / "50_500_a.jpg").write_text("old")
     download.run(
-        "Shot", [1], sg, logger, desktop_dir=str(tmp_path),
-        reveal_fn=lambda d: None, today=TODAY,
+        "Shot",
+        [1],
+        sg,
+        logger,
+        desktop_dir=str(tmp_path),
+        reveal_fn=lambda d: None,
+        today=TODAY,
     )
     assert sg.downloaded == []
     assert (folder / "50_500_a.jpg").read_text() == "old"
@@ -113,8 +133,13 @@ def test_per_file_failure_is_isolated(tmp_path):
     sg.fail_ids = {500}
     logger = FakeLogger()
     download.run(
-        "Shot", [1], sg, logger, desktop_dir=str(tmp_path),
-        reveal_fn=lambda d: None, today=TODAY,
+        "Shot",
+        [1],
+        sg,
+        logger,
+        desktop_dir=str(tmp_path),
+        reveal_fn=lambda d: None,
+        today=TODAY,
     )
     folder = tmp_path / FOLDER
     assert not (folder / "50_500_a.jpg").exists()

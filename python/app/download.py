@@ -12,6 +12,7 @@
 Pure of ``sgtk``; the caller (``app.py``) injects the ShotGrid connection,
 logger, and selection.
 """
+
 import datetime
 import os
 
@@ -57,9 +58,7 @@ def run(
             skipped += 1
             continue
         try:
-            shotgrid.download_attachment(
-                sg, attachment["entity"], dest_path
-            )
+            shotgrid.download_attachment(sg, attachment["entity"], dest_path)
             downloaded += 1
         except Exception as err:
             failed += 1

@@ -16,10 +16,18 @@ def test_target_filename():
 
 def test_plan_downloads_maps_each_attachment():
     attachments = [
-        {"note_id": 1, "attachment_id": 2, "filename": "a.jpg",
-         "entity": {"id": 2}},
-        {"note_id": 1, "attachment_id": 3, "filename": "a.jpg",
-         "entity": {"id": 3}},
+        {
+            "note_id": 1,
+            "attachment_id": 2,
+            "filename": "a.jpg",
+            "entity": {"id": 2},
+        },
+        {
+            "note_id": 1,
+            "attachment_id": 3,
+            "filename": "a.jpg",
+            "entity": {"id": 3},
+        },
     ]
     assert naming.plan_downloads(attachments) == [
         (attachments[0], "1_2_a.jpg"),
@@ -39,7 +47,6 @@ def test_different_attachments_never_collide():
 
 def test_note_and_attachment_ids_are_positional():
     # Swapping the two ids must change the result (order is significant).
-    assert (
-        naming.target_filename(7, 8, "x.png")
-        != naming.target_filename(8, 7, "x.png")
+    assert naming.target_filename(7, 8, "x.png") != naming.target_filename(
+        8, 7, "x.png"
     )
