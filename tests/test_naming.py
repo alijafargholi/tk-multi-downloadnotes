@@ -50,3 +50,22 @@ def test_note_and_attachment_ids_are_positional():
     assert naming.target_filename(7, 8, "x.png") != naming.target_filename(
         8, 7, "x.png"
     )
+
+
+def test_safe_filename_strips_posix_separators():
+    assert naming.safe_filename("../../evil.jpg") == "evil.jpg"
+    assert naming.safe_filename("a/b/c.jpg") == "c.jpg"
+
+
+def test_safe_filename_strips_windows_separators():
+    assert naming.safe_filename("..\\..\\evil.jpg") == "evil.jpg"
+
+
+def test_safe_filename_empty_or_trailing_separator():
+    assert naming.safe_filename("") == "attachment"
+    assert naming.safe_filename(None) == "attachment"
+    assert naming.safe_filename("foo/") == "attachment"
+
+
+def test_target_filename_sanitizes():
+    assert naming.target_filename(1, 2, "../x.jpg") == "1_2_x.jpg"

@@ -16,9 +16,22 @@ orchestrator can skip any target that already exists on disk.
 """
 
 
+def safe_filename(filename) -> str:
+    """Reduce a raw attachment name to a safe leaf filename.
+
+    Strips any directory components (both ``/`` and ``\\`` separators) so a
+    server-provided name like ``../../x.jpg`` or ``a/b.jpg`` cannot escape
+    or nest below the download folder.
+    """
+    name = filename or "attachment"
+    name = name.replace("\\", "/")
+    name = name.rsplit("/", 1)[-1]
+    return name or "attachment"
+
+
 def target_filename(note_id, attachment_id, filename) -> str:
-    """Build the unique local filename for a note attachment."""
-    return "%s_%s_%s" % (note_id, attachment_id, filename)
+    """Build the unique, path-safe local filename for a note attachment."""
+    return "%s_%s_%s" % (note_id, attachment_id, safe_filename(filename))
 
 
 def plan_downloads(attachments):

@@ -20,12 +20,19 @@ class FakeSg:
     def __init__(self, notes):
         self.notes = notes
         self.fail_ids = set()
+        self.partial_ids = set()
         self.downloaded = []
 
     def find(self, entity_type, filters, fields=None, **kwargs):
         return self.notes
 
     def download_attachment(self, attachment, file_path=None):
+        if attachment["id"] in self.partial_ids:
+            with open(  # ty: ignore[no-matching-overload]
+                file_path, "w"
+            ) as fh:
+                fh.write("partial")
+            raise RuntimeError("boom-after-partial")
         if attachment["id"] in self.fail_ids:
             raise RuntimeError("boom")
         self.downloaded.append((attachment, file_path))
@@ -145,3 +152,39 @@ def test_per_file_failure_is_isolated(tmp_path):
     assert not (folder / "50_500_a.jpg").exists()
     assert (folder / "50_501_b.jpg").exists()
     assert any("Failed to download" in e for e in logger.errors)
+
+
+def test_partial_download_is_removed(tmp_path):
+    notes = [_note(50, [_att(500, "a.jpg")])]
+    sg = FakeSg(notes)
+    sg.partial_ids = {500}
+    logger = FakeLogger()
+    download.run(
+        "Shot",
+        [1],
+        sg,
+        logger,
+        desktop_dir=str(tmp_path),
+        reveal_fn=lambda d: None,
+        today=TODAY,
+    )
+    folder = tmp_path / FOLDER
+    assert not (folder / "50_500_a.jpg").exists()
+
+
+def test_no_reveal_when_all_downloads_fail(tmp_path):
+    notes = [_note(50, [_att(500, "a.jpg")])]
+    sg = FakeSg(notes)
+    sg.fail_ids = {500}
+    logger = FakeLogger()
+    revealed = []
+    download.run(
+        "Shot",
+        [1],
+        sg,
+        logger,
+        desktop_dir=str(tmp_path),
+        reveal_fn=revealed.append,
+        today=TODAY,
+    )
+    assert revealed == []

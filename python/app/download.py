@@ -13,6 +13,7 @@ Pure of ``sgtk``; the caller (``app.py``) injects the ShotGrid connection,
 logger, and selection.
 """
 
+import contextlib
 import datetime
 import os
 
@@ -21,6 +22,13 @@ from . import naming, paths, reveal, shotgrid
 
 class DownloadNotesError(Exception):
     """Raised when the flow cannot complete; the message is user-facing."""
+
+
+def _remove_partial(path) -> None:
+    """Delete a partially-written file left by a failed download."""
+    if os.path.exists(path):
+        with contextlib.suppress(OSError):
+            os.remove(path)
 
 
 def run(
@@ -62,9 +70,11 @@ def run(
             downloaded += 1
         except Exception as err:
             failed += 1
+            _remove_partial(dest_path)
             logger.error("Failed to download %s: %s" % (target, err))
 
-    reveal_fn(dest_dir)
+    if downloaded or skipped:
+        reveal_fn(dest_dir)
     logger.info(
         "Download complete: %d downloaded, %d skipped, %d failed."
         % (downloaded, skipped, failed)
