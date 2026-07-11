@@ -22,9 +22,18 @@ line-length = 79
 indent-width = 4
 target-version = "py311"
 
+# The importable payload lives in python/app (imported as `app`), so
+# `python` is the first-party source root. app.py stays checked (its lone
+# sgtk import is suppressed inline). python/__init__.py is excluded: sgtk's
+# import_module execs it under a synthetic package name, so its
+# `from . import app` cannot be resolved statically — but the file is
+# required at runtime (do not delete it).
 [tool.ty.environment]
 python-version = "3.11"
-root = ["python", "."]
+root = ["python"]
+
+[tool.ty.src]
+exclude = ["python/__init__.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
